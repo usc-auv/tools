@@ -8,11 +8,18 @@ import json
 def git(*args):
   return subprocess.check_call(['git'] + list(args))
 
+if len(sys.argv) == 1:
+  print("Usages: auv-repo [init, sync, push]")
+  exit()
+
 opt = sys.argv[1].lower()
 
 if opt == 'init':
   if os.path.isdir('.manifest'):
     print("Error: repo is already instantiated here.")
+    exit()
+  if len(sys.argv) != 3:
+    print("Usage: auv-repo init <url>")
     exit()
   manifest_repo = sys.argv[2]
   git('clone', manifest_repo, '.manifest')
