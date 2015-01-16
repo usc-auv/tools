@@ -6,6 +6,7 @@ This is a collection of command-line tools for USC AUV.
 Installation
 ============
 
+First install `pip`. Instructions vary per platform, but shouldn't be difficult
 ```
 git clone git@github.com:uscauv/tools.git
 ./install.sh
