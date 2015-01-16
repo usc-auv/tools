@@ -13,10 +13,18 @@ def cli():
     pass
 
 
+def find_manifest_dir(dir='.'):
+    if path.isdir(dir + '/.manifest'):
+        return path.abspath(dir)
+    if path.realpath(dir) == '/':
+        return False
+    return find_manifest_dir(path.abspath(dir + '/..'))
+
+
 @click.command()
 @click.argument('repo')
 def init(repo):
-    if path.isdir('.manifest'):
+    if find_manifest_dir():
         click.echo("Error: repo is already installed here.")
         exit()
 
@@ -39,30 +47,30 @@ def init(repo):
 
 @click.command()
 def sync():
-    if not path.isdir('.manifest'):
+    if not find_manifest_dir():
         click.echo("Error: repo is not installed here.")
         exit()
 
     click.echo("Checking for updates to manifest...")
-    manifest_repo = Repo('.manifest')
+    manifest_repo = Repo(find_manifest_dir()+"/.manifest")
     manifest_repo.remotes.origin.pull()
 
-    with open('.manifest/manifest.json') as json_file:
+    with open(find_manifest_dir() + '/.manifest/manifest.json') as json_file:
         data = json.load(json_file)
         for project in data['projects']:
             # if it doesn't exist already, clone it
-            if not path.isdir(project['path']):
+            if not path.isdir(find_manifest_dir() + "/" + project['path']):
                 click.echo("New project found: [" + project["name"] + ']')
-                Repo.clone_from(data['fetch'] + project['name'], project['path'])
+                Repo.clone_from(data['fetch'] + project['name'], find_manifest_dir() + "/" + project['path'])
                 if 'branch' in project:
-                    repo = Repo(project['path'])
+                    repo = Repo(find_manifest_dir() + "/" + project['path'])
                     repo.heads[project['branch']].checkout()
                 else:
                     project['branch'] = 'master'
                 click.echo('[' + project['name'] + '] ==> ' + project['branch'])
             # it already exists, pull
             else:
-                repo = Repo(project['path'])
+                repo = Repo(find_manifest_dir() + "/" + project['path'])
                 prev_commit = repo.head.reference.commit
                 repo.remotes.origin.pull()
                 new_commit = repo.head.reference.commit
@@ -75,14 +83,14 @@ def sync():
 
 @click.command()
 def push():
-    if not path.isdir('.manifest'):
+    if not find_manifest_dir():
         click.echo("Error: repo is not installed here.")
         exit()
 
-    with open('.manifest/manifest.json') as json_file:
+    with open(find_manifest_dir() + '/.manifest/manifest.json') as json_file:
         data = json.load(json_file)
         for project in data['projects']:
-            repo = Repo(project['path'])
+            repo = Repo(find_manifest_dir() + "/" + project['path'])
             commits_ahead = repo.iter_commits(repo.active_branch.name + '..origin/' + repo.active_branch.name)
             commits_behind = repo.iter_commits('origin/' + repo.active_branch.name + '..' + repo.active_branch.name)
             ahead_count = sum(1 for c in commits_ahead)
@@ -98,14 +106,14 @@ def push():
 
 @click.command()
 def status():
-    if not path.isdir('.manifest'):
+    if not find_manifest_dir():
         click.echo("Error: repo is not installed here.")
         exit()
 
-    with open('.manifest/manifest.json') as json_file:
+    with open(find_manifest_dir() + '/.manifest/manifest.json') as json_file:
         data = json.load(json_file)
         for project in data['projects']:
-            repo = Repo(project['path'])
+            repo = Repo(find_manifest_dir() + "/" + project['path'])
             commits_ahead = repo.iter_commits(repo.active_branch.name + '..origin/' + repo.active_branch.name)
             commits_behind = repo.iter_commits('origin/' + repo.active_branch.name + '..' + repo.active_branch.name)
             ahead_count = sum(1 for c in commits_ahead)
