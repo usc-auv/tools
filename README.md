@@ -18,18 +18,18 @@ Remove references to this directory's `env_setup.sh` script from your ~/.bashrc,
 
 Repo Tool
 =========
-The `auv-repo` tool is a utility developed for managing multiple git repos as part of a larger project. It is inspired by Google's "repo" tool used in the Android Open Source Project.
+The `repo` tool is a utility developed for managing multiple git repos as part of a larger project. It is inspired by Google's "repo" tool used in the Android Open Source Project.
 
 Usage
 -----
 
-`auv-repo init uscauv/manifest` will download the repo manifest, and clone all of the referenced projects.
+`repo init uscauv/manifest` will download the repo manifest, and clone all of the referenced projects.
 
-`auv-repo status` will show you the status of your working copy of each project similar to `git status`.
+`repo status` will show you the status of your working copy of each project similar to `git status`.
 
-`auv-repo sync` will pull changes from the remote repositories into your local copies.
+`repo sync` will pull changes from the remote repositories into your local copies.
 
-`auv-repo push` will push any committed changes for all repos. This is equivalent to running `git push` in each repo.
+`repo push` will push any committed changes for all repos. This is equivalent to running `git push` in each repo.
 
 Manifest details
 ----------------
