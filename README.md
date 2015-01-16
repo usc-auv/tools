@@ -3,6 +3,18 @@ USC AUV Tools
 
 This is a collection of command-line tools for USC AUV.
 
+Installation
+============
+
+```
+git clone git@github.com:uscauv/tools.git
+./install.sh
+```
+
+Uninstallation
+==============
+Remove references to this directory's `env_setup.sh` script from your ~/.bashrc, ~/.bash_profile and ~/.zshrc
+
 Repo Tool
 =========
 The `auv-repo` tool is a utility developed for managing multiple git repos as part of a larger project. It is inspired by Google's "repo" tool used in the Android Open Source Project.
