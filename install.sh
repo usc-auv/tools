@@ -21,3 +21,5 @@ then
    echo "Adding entry to ~/.zshrc"
    echo "source $BASEDIR/env_setup.sh" >> ~/.zshrc
 fi
+
+source ./env_setup.sh
