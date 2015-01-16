@@ -8,6 +8,10 @@ import click
 from git import *
 
 
+def message(project, message):
+    click.echo(('[' + project + '] ').ljust(max_repo_len + 3, ' ') + '==> ' + message)
+
+
 @click.group()
 def cli():
     pass
@@ -42,7 +46,7 @@ def init(repo):
                 gitRepo.heads[project['branch']].checkout()
             else:
                 project['branch'] = 'master'
-            click.echo('[' + project['name'] + '] ==> ' + project['branch'])
+            message(project['name'], project['branch'])
 
 
 @click.command()
@@ -52,7 +56,7 @@ def sync():
         exit()
 
     click.echo("Checking for updates to manifest...")
-    manifest_repo = Repo(find_manifest_dir()+"/.manifest")
+    manifest_repo = Repo(find_manifest_dir() + "/.manifest")
     manifest_repo.remotes.origin.pull()
 
     with open(find_manifest_dir() + '/.manifest/manifest.json') as json_file:
@@ -60,14 +64,13 @@ def sync():
         for project in data['projects']:
             # if it doesn't exist already, clone it
             if not path.isdir(find_manifest_dir() + "/" + project['path']):
-                click.echo("New project found: [" + project["name"] + ']')
                 Repo.clone_from(data['fetch'] + project['name'], find_manifest_dir() + "/" + project['path'])
                 if 'branch' in project:
                     repo = Repo(find_manifest_dir() + "/" + project['path'])
                     repo.heads[project['branch']].checkout()
                 else:
                     project['branch'] = 'master'
-                click.echo('[' + project['name'] + '] ==> ' + project['branch'])
+                message(project['name'], project['branch'])
             # it already exists, pull
             else:
                 repo = Repo(find_manifest_dir() + "/" + project['path'])
@@ -78,7 +81,7 @@ def sync():
                 if new_commit != prev_commit:
                     click.echo('[' + project['name'] + ']  ' + prev_commit + " ==> " + new_commit)
                 else:
-                    click.echo('[' + project['name'] + '] already up-to-date.')
+                    message(project['name'], "already up-to-date.")
 
 
 @click.command()
@@ -96,12 +99,12 @@ def push():
             ahead_count = sum(1 for c in commits_ahead)
             behind_count = sum(1 for c in commits_behind)
             if ahead_count > 0 and behind_count == 0:
-                click.echo("[" + project["name"] + "] ==> pushing " + ahead_count + " commits")
+                message(project['name'], "pushing " + ahead_count + " commits")
                 repo.remotes.origin.push()
             if ahead_count == 0 and behind_count > 0:
-                click.echo("[" + project["name"] + "] ==> behind by " + behind_count + " commits. Run sync first.")
+                message(project['name'], "behind by " + behind_count + " commits. Run sync first.")
             if ahead_count == 0 and behind_count == 0:
-                click.echo("[" + project["name"] + "] ==> already up-to-date.")
+                message(project['name'], "already up-to-date.")
 
 
 @click.command()
@@ -119,13 +122,13 @@ def status():
             ahead_count = sum(1 for c in commits_ahead)
             behind_count = sum(1 for c in commits_behind)
             if ahead_count > 0 and behind_count == 0:
-                click.echo("[" + project["name"] + "] ==> ahead by " + ahead_count + " commits")
+                message(project['name'], "ahead by " + ahead_count + " commits.")
             if ahead_count == 0 and behind_count > 0:
-                click.echo("[" + project["name"] + "] ==> behind by " + behind_count + " commits.")
+                message(project['name'], "behind by " + behind_count + " commits.")
             if repo.is_dirty() or len(repo.untracked_files) != 0:
-                click.echo("[" + project["name"] + "] ==> there are unstaged changes or untracked files.")
+                message(project['name'], "there are unstaged changes or untracked files.")
             elif not repo.is_dirty():
-                click.echo("[" + project["name"] + "] ==> no changes to commit.")
+                message(project['name'], "no changes to commit.")
 
 
 cli.add_command(init)
@@ -134,4 +137,12 @@ cli.add_command(push)
 cli.add_command(status)
 
 if __name__ == '__main__':
+    # want to figure out the max repo name length to format properly
+    max_repo_len = 0
+    with open(find_manifest_dir() + '/.manifest/manifest.json') as json_file:
+        data = json.load(json_file)
+        for project in data['projects']:
+            if len(project['name']) > max_repo_len:
+                max_repo_len = len(project['name'])
+
     cli()
