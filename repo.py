@@ -17,7 +17,7 @@ def cli():
 @click.argument('repo')
 def init(repo):
     if path.isdir('.manifest'):
-        click.echo("Error: repo is already instantiated here.")
+        click.echo("Error: repo is already installed here.")
         exit()
 
     # if this regex doesn't match, assume we are dealing with a github repo
@@ -40,7 +40,7 @@ def init(repo):
 @click.command()
 def sync():
     if not path.isdir('.manifest'):
-        click.echo("Error: repo is not instantiated here.")
+        click.echo("Error: repo is not installed here.")
         exit()
 
     click.echo("Checking for updates to manifest...")
@@ -75,6 +75,10 @@ def sync():
 
 @click.command()
 def push():
+    if not path.isdir('.manifest'):
+        click.echo("Error: repo is not installed here.")
+        exit()
+
     with open('.manifest/manifest.json') as json_file:
         data = json.load(json_file)
         for project in data['projects']:
@@ -94,6 +98,10 @@ def push():
 
 @click.command()
 def status():
+    if not path.isdir('.manifest'):
+        click.echo("Error: repo is not installed here.")
+        exit()
+
     with open('.manifest/manifest.json') as json_file:
         data = json.load(json_file)
         for project in data['projects']:
