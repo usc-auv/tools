@@ -2,7 +2,7 @@
 
 import json
 import re
-from os import path, listdir
+from os import path
 
 import click
 from git import *
@@ -75,10 +75,21 @@ def sync():
 
 @click.command()
 def push():
-    for dirname in listdir('.'):
-        if not dirname.startswith('.') and path.isdir(dirname):
-            repo = Repo(dirname)
-            repo.remotes.origin.push()
+    with open('.manifest/manifest.json') as json_file:
+        data = json.load(json_file)
+        for project in data['projects']:
+            repo = Repo(project['path'])
+            commits_ahead = repo.iter_commits(repo.active_branch.name + '..origin/' + repo.active_branch.name)
+            commits_behind = repo.iter_commits('origin/' + repo.active_branch.name + '..' + repo.active_branch.name)
+            ahead_count = sum(1 for c in commits_ahead)
+            behind_count = sum(1 for c in commits_behind)
+            if ahead_count > 0 and behind_count == 0:
+                click.echo("[" + project["name"] + "] ==> pushing " + ahead_count + " commits")
+                repo.remotes.origin.push()
+            if ahead_count == 0 and behind_count > 0:
+                click.echo("[" + project["name"] + "] ==> behind by " + behind_count + " commits. Run sync first.")
+            if ahead_count == 0 and behind_count == 0:
+                click.echo("[" + project["name"] + "] ==> already up-to-date.")
 
 
 cli.add_command(init)
