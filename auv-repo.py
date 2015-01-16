@@ -2,7 +2,7 @@
 
 import json
 import re
-import os
+from os import path, listdir
 
 import click
 from git import *
@@ -16,7 +16,7 @@ def cli():
 @click.command()
 @click.argument('repo')
 def init(repo):
-    if os.path.isdir('.manifest'):
+    if path.isdir('.manifest'):
         click.echo("Error: repo is already instantiated here.")
         exit()
 
@@ -39,28 +39,46 @@ def init(repo):
 
 @click.command()
 def sync():
-    if not os.path.isdir('.manifest'):
+    if not path.isdir('.manifest'):
         click.echo("Error: repo is not instantiated here.")
         exit()
 
-    click.echo("Checking for updates to manifest")
-    os.chdir('.manifest')
-    git('pull')
-    os.chdir('..')
-    for dirname in os.listdir('.'):
-        if not dirname.startswith('.') and os.path.isdir(dirname):
-            os.chdir(dirname)
-            click.echo(dirname)
-            git('pull')
+    click.echo("Checking for updates to manifest...")
+    manifest_repo = Repo('.manifest')
+    manifest_repo.remotes.origin.pull()
+
+    with open('.manifest/manifest.json') as json_file:
+        data = json.load(json_file)
+        for project in data['projects']:
+            # if it doesn't exist already, clone it
+            if not path.isdir(project['path']):
+                click.echo("New project found: [" + project["name"] + ']')
+                Repo.clone_from(data['fetch'] + project['name'], project['path'])
+                if 'branch' in project:
+                    repo = Repo(project['path'])
+                    repo.heads[project['branch']].checkout()
+                else:
+                    project['branch'] = 'master'
+                click.echo('[' + project['name'] + '] ==> ' + project['branch'])
+            # it already exists, pull
+            else:
+                repo = Repo(project['path'])
+                prev_commit = repo.head.reference.commit
+                repo.remotes.origin.pull()
+                new_commit = repo.head.reference.commit
+
+                if new_commit != prev_commit:
+                    click.echo('[' + project['name'] + ']  ' + prev_commit + " ==> " + new_commit)
+                else:
+                    click.echo('[' + project['name'] + '] already up-to-date.')
 
 
 @click.command()
 def push():
-    for dirname in os.listdir('.'):
-        if not dirname.startswith('.') and os.path.isdir(dirname):
-            os.chdir(dirname)
-            click.echo(dirname)
-            git('push')
+    for dirname in listdir('.'):
+        if not dirname.startswith('.') and path.isdir(dirname):
+            repo = Repo(dirname)
+            repo.remotes.origin.push()
 
 
 cli.add_command(init)
