@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 
-import subprocess
 import json
 import re
 import os
 
 import click
 from git import *
-
-
-def git(*args):
-    return subprocess.check_call(['git'] + list(args))
 
 
 @click.group()
@@ -29,11 +24,17 @@ def init(repo):
     if not re.match('git@|https://|git://', repo):
         repo = 'git@github.com:' + repo + '.git'
 
-    git('clone', repo, '.manifest')
+    Repo.clone_from(repo, '.manifest')
     with open('.manifest/manifest.json') as json_file:
         data = json.load(json_file)
         for project in data['projects']:
-            git('clone', data['fetch'] + project['name'], project['path'])
+            Repo.clone_from(data['fetch'] + project['name'], project['path'])
+            if 'branch' in project:
+                gitRepo = Repo(project['path'])
+                gitRepo.heads[project['branch']].checkout()
+            else:
+                project['branch'] = 'master'
+            click.echo('[' + project['name'] + '] ==> ' + project['branch'])
 
 
 @click.command()
@@ -42,7 +43,7 @@ def sync():
         click.echo("Error: repo is not instantiated here.")
         exit()
 
-    click.echo('Checking for updates to manifest')
+    click.echo("Checking for updates to manifest")
     os.chdir('.manifest')
     git('pull')
     os.chdir('..')
