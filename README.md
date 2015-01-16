@@ -12,7 +12,7 @@ git clone git@github.com:uscauv/tools.git
 ```
 
 Uninstallation
-==============
+--------------
 Remove references to this directory's `env_setup.sh` script from your ~/.bashrc, ~/.bash_profile and ~/.zshrc
 
 Repo Tool
