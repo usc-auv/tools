@@ -83,7 +83,7 @@ def sync():
                 new_commit = repo.head.reference.commit
 
                 if new_commit != prev_commit:
-                    click.echo('[' + project['name'] + ']  ' + prev_commit + " ==> " + new_commit)
+                    click.echo('[' + project['name'] + ']  ' + str(prev_commit)[:7] + " ==> " + str(new_commit)[:7])
                 else:
                     message(project['name'], "already up-to-date.")
 
