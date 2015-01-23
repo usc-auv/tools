@@ -12,6 +12,7 @@ git clone git@github.com:uscauv/tools.git
 cd tools/
 ./install.sh
 ```
+Then close this shell and open up a new one.
 
 Uninstallation
 --------------
