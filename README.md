@@ -9,6 +9,7 @@ Installation
 First install `pip`. Instructions vary per platform, but shouldn't be difficult
 ```
 git clone git@github.com:uscauv/tools.git
+cd tools/
 ./install.sh
 ```
 
