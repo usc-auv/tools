@@ -26,5 +26,3 @@ echo "Installing dependencies with pip and pip3"
 
 pip3 install -r requirements.txt > /dev/null
 pip install -r requirements.txt > /dev/null
-
-source ./env_setup.sh
