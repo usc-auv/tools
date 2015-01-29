@@ -2,6 +2,7 @@
 
 import json
 import re
+from threading import Thread
 from os import path
 
 import click
@@ -69,26 +70,32 @@ def sync():
     with open(manifest_file()) as json_file:
         data = json.load(json_file)
         for project in data['projects']:
-            # if it doesn't exist already, clone it
-            if not path.isdir(find_repo_dir() + "/" + project['path']):
-                Repo.clone_from(data['fetch'] + project['name'], find_repo_dir() + "/" + project['path'])
-                if 'branch' in project:
-                    repo = Repo(find_repo_dir() + "/" + project['path'])
-                    repo.heads[project['branch']].checkout()
-                else:
-                    project['branch'] = 'master'
-                message(project['name'], project['branch'])
-            # it already exists, pull
-            else:
-                repo = Repo(find_repo_dir() + "/" + project['path'])
-                prev_commit = repo.head.reference.commit
-                repo.remotes.origin.pull()
-                new_commit = repo.head.reference.commit
+            # trailing comma indicates that it is a tuple, otherwise it treats project as multiple arguments
+            thread = Thread(target=sync_repo, args=(project,))
+            thread.start()
 
-                if new_commit != prev_commit:
-                    click.echo('[' + project['name'] + ']  ' + str(prev_commit)[:7] + " ==> " + str(new_commit)[:7])
-                else:
-                    message(project['name'], "already up-to-date.")
+
+def sync_repo(project):
+    # if it doesn't exist already, clone it
+    if not path.isdir(find_repo_dir() + "/" + project['path']):
+        Repo.clone_from(data['fetch'] + project['name'], find_repo_dir() + "/" + project['path'])
+        if 'branch' in project:
+            repo = Repo(find_repo_dir() + "/" + project['path'])
+            repo.heads[project['branch']].checkout()
+        else:
+            project['branch'] = 'master'
+        message(project['name'], project['branch'])
+    # it already exists, pull
+    else:
+        repo = Repo(find_repo_dir() + "/" + project['path'])
+        prev_commit = repo.head.reference.commit
+        repo.remotes.origin.pull()
+        new_commit = repo.head.reference.commit
+
+        if new_commit != prev_commit:
+            click.echo('[' + project['name'] + ']  ' + str(prev_commit)[:7] + " ==> " + str(new_commit)[:7])
+        else:
+            message(project['name'], "already up-to-date.")
 
 
 @click.command()
