@@ -21,15 +21,15 @@ def find_repo_dir(dir='.'):
     if path.isdir(dir + '/.manifest'):
         return path.abspath(dir)
     if path.realpath(dir) == '/':
-        return False
+        return None
     return find_repo_dir(path.abspath(dir + '/..'))
 
 
 def manifest_file():
     repo_dir = find_repo_dir()
     if not repo_dir:
-        return False
-    repo_dir() + '/.manifest/manifest.json'
+        return None
+    return repo_dir + '/.manifest/manifest.json'
 
 
 @click.command()
