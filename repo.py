@@ -26,7 +26,10 @@ def find_repo_dir(dir='.'):
 
 
 def manifest_file():
-    return find_repo_dir() + '/.manifest/manifest.json'
+    repo_dir = find_repo_dir()
+    if not repo_dir:
+        return False
+    repo_dir() + '/.manifest/manifest.json'
 
 
 @click.command()
@@ -143,10 +146,13 @@ cli.add_command(status)
 if __name__ == '__main__':
     # want to figure out the max repo name length to format properly
     max_repo_len = 0
-    with open(manifest_file()) as json_file:
-        data = json.load(json_file)
-        for project in data['projects']:
-            if len(project['name']) > max_repo_len:
-                max_repo_len = len(project['name'])
+
+    # don't crash if repo is not installed here
+    if manifest_file():
+        with open(manifest_file()) as json_file:
+            data = json.load(json_file)
+            for project in data['projects']:
+                if len(project['name']) > max_repo_len:
+                    max_repo_len = len(project['name'])
 
     cli()
