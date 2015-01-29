@@ -24,5 +24,5 @@ fi
 
 echo "Installing dependencies with pip and pip3"
 
-pip3 install -r requirements.txt > /dev/null
-pip install -r requirements.txt > /dev/null
+command -v pip3 >/dev/null 2>&1 && pip3 install -r requirements.txt || { echo >&2 "pip3 not installed, trying pip";}
+command -v pip >/dev/null 2>&1 && pip install -r requirements.txt || { echo >&2 "pip not installed, you must have pip or pip3!";}
