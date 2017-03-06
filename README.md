@@ -25,7 +25,7 @@ The `repo` tool is a utility developed for managing multiple git repos as part o
 Usage
 -----
 
-`repo init uscauv/manifest` will download the repo manifest, and clone all of the referenced projects.
+`repo init usc-auv/manifest` will download the repo manifest, and clone all of the referenced projects.
 
 `repo status` will show you the status of your working copy of each project similar to `git status`.
 
@@ -35,4 +35,4 @@ Usage
 
 Manifest details
 ----------------
-The manifest is a special GitHub repo containing metadata about all of the projects. For more information visit the [manifest project](https://github.com/uscauv/manifest).
+The manifest is a special GitHub repo containing metadata about all of the projects. For more information visit the [manifest project](https://github.com/usc-auv/manifest).
